@@ -13,5 +13,5 @@ bench:
 	go test --benchmem -benchtime=10s -bench='Benchmark.*' -run='^$$'
 
 lint:
-	golangci-lint run --timeout=600s --enable=asasalint,asciicheck,bidichk,containedctx,contextcheck,decorder,durationcheck,errorlint,exptostd,fatcontext,forbidigo,gocheckcompilerdirectives,gochecksumtype,goconst,gofmt,goimports,gosmopolitan,grouper,iface,importas,mirror,misspell,nilerr,nilnil,perfsprint,prealloc,reassign,recvcheck,sloglint,testifylint,unconvert,wastedassign,whitespace && go vet ./...
+	golangci-lint run --timeout=600s && go vet ./...
 

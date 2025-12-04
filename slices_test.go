@@ -3647,7 +3647,7 @@ func TestSlicePrepend(t *testing.T) {
 			result := SlicePrepend(tt.elem, tt.slices...)
 			assert.Equal(t, tt.expected, result)
 			// Verify exact allocation size
-			assert.Equal(t, len(tt.expected), len(result))
+			assert.Len(t, result, len(tt.expected))
 			assert.Equal(t, len(tt.expected), cap(result))
 		})
 	}
