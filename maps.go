@@ -19,6 +19,9 @@ func MapInvertInto[K comparable, V comparable](dest map[V]K, m map[K]V) {
 // The result is pre-allocated to the exact size needed, avoiding reallocations and minimizing memory usage.
 // Order of keys is nondeterministic.
 func MapKeysSlice[K comparable, V any](m map[K]V) []K {
+	if len(m) == 0 {
+		return nil
+	}
 	result := make([]K, 0, len(m))
 	for k := range m {
 		result = append(result, k)
@@ -30,6 +33,9 @@ func MapKeysSlice[K comparable, V any](m map[K]V) []K {
 // The result is pre-allocated to the exact size needed, avoiding reallocations and minimizing memory usage.
 // Order of values is nondeterministic.
 func MapValuesSlice[K comparable, V any](m map[K]V) []V {
+	if len(m) == 0 {
+		return nil
+	}
 	result := make([]V, 0, len(m))
 	for _, v := range m {
 		result = append(result, v)

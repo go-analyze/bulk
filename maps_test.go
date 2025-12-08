@@ -265,14 +265,8 @@ var mapKeyValueSliceTests = []struct {
 	{
 		name:           "nil",
 		input:          nil,
-		expectedKeys:   []int{},
-		expectedValues: []string{},
-	},
-	{
-		name:           "empty",
-		input:          map[int]string{},
-		expectedKeys:   []int{},
-		expectedValues: []string{},
+		expectedKeys:   nil,
+		expectedValues: nil,
 	},
 	{
 		name:           "single_pair",
@@ -342,6 +336,11 @@ func TestMapKeysSlice(t *testing.T) {
 		})
 	}
 
+	t.Run("empty", func(t *testing.T) {
+		result := MapKeysSlice(map[string]int{})
+		assert.Nil(t, result)
+	})
+
 	t.Run("struct", func(t *testing.T) {
 		type Point struct{ X, Y int }
 		input := map[Point]string{{1, 2}: "first", {3, 4}: "second"}
@@ -363,6 +362,11 @@ func TestMapValuesSlice(t *testing.T) {
 			assert.Equal(t, len(result), cap(result))
 		})
 	}
+
+	t.Run("empty", func(t *testing.T) {
+		result := MapValuesSlice(map[string]int{})
+		assert.Nil(t, result)
+	})
 
 	t.Run("struct", func(t *testing.T) {
 		type Point struct{ X, Y int }
