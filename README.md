@@ -213,3 +213,8 @@ Many operations offer multiple variants - check function signatures for the comp
 * Scenarios where **in-place mutations** are safe and desired (see `Memory Safety` above)
 
 If you require copy-on-write semantics as your primary workflow, consider the other options described in `Memory Safety`.
+
+## Project Versioning
+
+This project follows [ZeroVer](https://0ver.org) versioning, and will never release a v1. Instead, middle digit increases (e.g., `v0.1.X` to `v0.2.0`) indicate breaking changes such as Go version updates or API modifications. Patch version increases (e.g., `v0.2.0` to `v0.2.1`) indicate bug fixes and feature expansions, which are generally safe to apply.
+
