@@ -595,7 +595,7 @@ func SliceIntoCounts[T comparable](m map[T]int, slices ...[]T) {
 
 // SliceToCountsBy transforms slice elements using keyfunc and returns a map with generated keys and their counts.
 func SliceToCountsBy[T any, K comparable](keyfunc func(T) K, slices ...[]T) map[K]int {
-	result := make(map[K]int, sliceTotalSize(slices))
+	result := make(map[K]int)
 	SliceIntoCountsBy(result, keyfunc, slices...)
 	return result
 }
@@ -630,7 +630,7 @@ func SliceIntoIndexBy[T any, K comparable](m map[K]T, keyfunc func(T) K, slices 
 
 // SliceToGroupsBy groups slice elements by keys generated using keyfunc.
 func SliceToGroupsBy[T any, K comparable](keyfunc func(T) K, slices ...[]T) map[K][]T {
-	result := make(map[K][]T, sliceTotalSize(slices))
+	result := make(map[K][]T)
 	SliceIntoGroupsBy(result, keyfunc, slices...)
 	return result
 }
