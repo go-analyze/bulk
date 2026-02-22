@@ -81,7 +81,7 @@ func singleSliceFilter[T any](predicate func(val T) bool, slice []T) ([]T, bool)
 				if predicate(slice[j]) {
 					// Found another true after false, not consecutive - need to allocate
 					// worst case size: (consecutiveEnd-firstTrueIdx+1) + 1 + (len(slice) - j - 1) (+1 -1 simplified out)
-					result := make([]T, 0, (consecutiveEnd-firstTrueIdx+1)+capGuess(len(slice)-j))
+					result := make([]T, 0, (consecutiveEnd-firstTrueIdx+1)+sliceCapGuess(len(slice)-j))
 					result = append(result, slice[firstTrueIdx:consecutiveEnd+1]...)
 					result = append(result, slice[j])
 
@@ -105,7 +105,7 @@ func singleSliceFilter[T any](predicate func(val T) bool, slice []T) ([]T, bool)
 			}
 
 			// true+ -> false+ -> true - We must allocate at this point
-			result := make([]T, 0, falseIdx+capGuess(len(slice)-secondTrueIdx))
+			result := make([]T, 0, falseIdx+sliceCapGuess(len(slice)-secondTrueIdx))
 			result = append(result, slice[:falseIdx]...)
 			result = append(result, slice[secondTrueIdx])
 			return SliceFilterInto(result, predicate, slice[secondTrueIdx+1:]), false
@@ -242,7 +242,7 @@ func singleSliceFilterTransform[I any, R any](predicate func(I) bool, transform 
 				if predicate(slice[j]) {
 					// Found another true after false, not consecutive - need to allocate
 					// worst case size: (consecutiveEnd-firstTrueIdx+1) + 1 + (len(slice) - j - 1) (+1 -1 simplified out)
-					result := make([]R, 0, (consecutiveEnd-firstTrueIdx+1)+capGuess(len(slice)-j))
+					result := make([]R, 0, (consecutiveEnd-firstTrueIdx+1)+sliceCapGuess(len(slice)-j))
 					for i := firstTrueIdx; i <= consecutiveEnd; i++ {
 						val, err := transform(slice[i])
 						if err != nil {
@@ -277,7 +277,7 @@ func singleSliceFilterTransform[I any, R any](predicate func(I) bool, transform 
 			}
 
 			// true+ -> false+ -> true - We must allocate at this point
-			result := make([]R, 0, falseIdx+capGuess(len(slice)-secondTrueIdx))
+			result := make([]R, 0, falseIdx+sliceCapGuess(len(slice)-secondTrueIdx))
 			for i := 0; i < falseIdx; i++ {
 				val, err := transform(slice[i])
 				if err != nil {
@@ -443,7 +443,7 @@ func singleSliceSplit[T any](predicate func(val T) bool, slice []T) ([]T, []T, b
 	}
 
 	// Allocate slices and copy first segment
-	remainingBuff := capGuess(len(slice) - splitIdx)
+	remainingBuff := sliceCapGuess(len(slice) - splitIdx)
 	var tSlice, fSlice []T
 	if first {
 		tSlice = append(make([]T, 0, splitIdx+remainingBuff-1), slice[:splitIdx]...)
@@ -483,7 +483,7 @@ func SliceSplitInPlace[T any](predicate func(val T) bool, slice []T) ([]T, []T) 
 			matchList = append(matchList, val) // writes to earlier indices only; safe
 		} else {
 			if otherList == nil { // Allocate when we discover the split
-				otherList = make([]T, 0, capGuess(n-i))
+				otherList = make([]T, 0, sliceCapGuess(n-i))
 			}
 			otherList = append(otherList, val)
 		}
@@ -670,7 +670,7 @@ func SliceIntersect[T comparable](a, b []T) []T {
 						maxCount = aMax // conditional because b may still have been the min
 					}
 					seen = make(map[T]struct{}, maxCount)
-					result = make([]T, 0, capGuess(maxCount))
+					result = make([]T, 0, sliceCapGuess(maxCount))
 				}
 				seen[val] = struct{}{}
 				result = append(result, val)
@@ -695,7 +695,7 @@ func SliceDifference[T comparable](a, b []T) []T {
 			if _, duplicate := seen[val]; !duplicate {
 				if result == nil { // allocate based on potential remaining
 					seen = make(map[T]struct{}, len(a)-aIdx)
-					result = make([]T, 0, capGuess(len(a)-aIdx))
+					result = make([]T, 0, sliceCapGuess(len(a)-aIdx))
 				}
 				seen[val] = struct{}{}
 				result = append(result, val)
@@ -717,8 +717,8 @@ func SlicePrepend[T any](elm T, existing ...[]T) []T {
 	return result
 }
 
-// capGuess estimates allocation size, reducing large allocations in case of significant filtering.
-func capGuess(remaining int) int {
+// sliceCapGuess estimates allocation size, reducing large allocations in case of significant filtering.
+func sliceCapGuess(remaining int) int {
 	if remaining > 2048 {
 		return remaining / 2
 	}
@@ -730,5 +730,5 @@ func sliceTotalSize[T any](slices [][]T) int {
 	for _, slice := range slices {
 		size += len(slice)
 	}
-	return capGuess(size)
+	return sliceCapGuess(size)
 }

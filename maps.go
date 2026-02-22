@@ -32,13 +32,24 @@ func MapKeysSlice[K comparable, V any](m map[K]V) []K {
 // MapValuesSlice returns a slice containing all values from the map.
 // The result is pre-allocated to the exact size needed, avoiding reallocations and minimizing memory usage.
 // Order of values is nondeterministic.
-func MapValuesSlice[K comparable, V any](m map[K]V) []V {
-	if len(m) == 0 {
+func MapValuesSlice[K comparable, V any](maps ...map[K]V) []V {
+	size := mapTotalSize(maps)
+	if size == 0 {
 		return nil
 	}
-	result := make([]V, 0, len(m))
-	for _, v := range m {
-		result = append(result, v)
+	result := make([]V, 0, size)
+	for _, m := range maps {
+		for _, v := range m {
+			result = append(result, v)
+		}
 	}
 	return result
+}
+
+func mapTotalSize[K comparable, V any](maps []map[K]V) int {
+	var size int
+	for _, m := range maps {
+		size += len(m)
+	}
+	return size
 }

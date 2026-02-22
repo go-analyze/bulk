@@ -393,4 +393,65 @@ func TestMapValuesSlice(t *testing.T) {
 		assert.True(t, found["a"])
 		assert.True(t, found["b"])
 	})
+
+	t.Run("no_arguments", func(t *testing.T) {
+		result := MapValuesSlice[string, int]()
+		assert.Nil(t, result)
+	})
+
+	t.Run("multiple_maps", func(t *testing.T) {
+		a := map[int]string{1: "one", 2: "two"}
+		b := map[int]string{3: "three", 4: "four"}
+		result := MapValuesSlice(a, b)
+		assert.Len(t, result, 4)
+		assert.ElementsMatch(t, []string{"one", "two", "three", "four"}, result)
+		assert.Equal(t, len(result), cap(result))
+	})
+
+	t.Run("multiple_maps_overlapping_values", func(t *testing.T) {
+		a := map[int]string{1: "same"}
+		b := map[int]string{2: "same"}
+		result := MapValuesSlice(a, b)
+		assert.Len(t, result, 2)
+		assert.Equal(t, []string{"same", "same"}, result)
+	})
+
+	t.Run("multiple_maps_with_nil", func(t *testing.T) {
+		a := map[int]string{1: "one"}
+		var b map[int]string
+		c := map[int]string{2: "two"}
+		result := MapValuesSlice(a, b, c)
+		assert.Len(t, result, 2)
+		assert.ElementsMatch(t, []string{"one", "two"}, result)
+	})
+
+	t.Run("multiple_maps_with_empty", func(t *testing.T) {
+		a := map[int]string{1: "one"}
+		b := map[int]string{}
+		c := map[int]string{2: "two"}
+		result := MapValuesSlice(a, b, c)
+		assert.Len(t, result, 2)
+		assert.ElementsMatch(t, []string{"one", "two"}, result)
+	})
+
+	t.Run("multiple_maps_all_nil", func(t *testing.T) {
+		var a, b, c map[int]string
+		result := MapValuesSlice(a, b, c)
+		assert.Nil(t, result)
+	})
+
+	t.Run("multiple_maps_all_empty", func(t *testing.T) {
+		result := MapValuesSlice(map[int]string{}, map[int]string{}, map[int]string{})
+		assert.Nil(t, result)
+	})
+
+	t.Run("multiple_maps_three", func(t *testing.T) {
+		a := map[string]int{"a": 1}
+		b := map[string]int{"b": 2}
+		c := map[string]int{"c": 3}
+		result := MapValuesSlice(a, b, c)
+		assert.Len(t, result, 3)
+		assert.ElementsMatch(t, []int{1, 2, 3}, result)
+		assert.Equal(t, len(result), cap(result))
+	})
 }
