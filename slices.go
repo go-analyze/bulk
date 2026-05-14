@@ -717,6 +717,18 @@ func SlicePrepend[T any](elm T, existing ...[]T) []T {
 	return result
 }
 
+// SlicePrependInPlace prepends elm using existing's capacity when sufficient, otherwise falls back to SlicePrepend.
+// The input slice is modified and must be discarded after calling.
+func SlicePrependInPlace[T any](elm T, existing []T) []T {
+	if cap(existing) < len(existing)+1 {
+		return SlicePrepend(elm, existing)
+	}
+	result := existing[:len(existing)+1]
+	copy(result[1:], existing)
+	result[0] = elm
+	return result
+}
+
 // sliceCapGuess estimates allocation size, reducing large allocations in case of significant filtering.
 func sliceCapGuess(remaining int) int {
 	if remaining > 2048 {

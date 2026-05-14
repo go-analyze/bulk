@@ -3577,72 +3577,72 @@ func TestSliceConcat(t *testing.T) {
 	})
 }
 
+var slicePrependTestCases = []struct {
+	name     string
+	elem     int
+	slices   [][]int
+	expected []int
+}{
+	{
+		name:     "no_slices",
+		elem:     1,
+		slices:   nil,
+		expected: []int{1},
+	},
+	{
+		name:     "empty_slices",
+		elem:     1,
+		slices:   [][]int{},
+		expected: []int{1},
+	},
+	{
+		name:     "single_empty_slice",
+		elem:     1,
+		slices:   [][]int{{}},
+		expected: []int{1},
+	},
+	{
+		name:     "single_nil_slice",
+		elem:     1,
+		slices:   [][]int{nil},
+		expected: []int{1},
+	},
+	{
+		name:     "single_slice",
+		elem:     0,
+		slices:   [][]int{{1, 2, 3}},
+		expected: []int{0, 1, 2, 3},
+	},
+	{
+		name:     "multiple_slices",
+		elem:     0,
+		slices:   [][]int{{1, 2}, {3, 4}, {5}},
+		expected: []int{0, 1, 2, 3, 4, 5},
+	},
+	{
+		name:     "multiple_slices_with_empty",
+		elem:     99,
+		slices:   [][]int{{1}, {}, {2, 3}},
+		expected: []int{99, 1, 2, 3},
+	},
+	{
+		name:     "mixed_nil_and_non_nil",
+		elem:     42,
+		slices:   [][]int{nil, {1, 2}, nil, {3}},
+		expected: []int{42, 1, 2, 3},
+	},
+	{
+		name:     "prepend_to_large_slice",
+		elem:     -1,
+		slices:   [][]int{sliceLargeInput},
+		expected: append([]int{-1}, sliceLargeInput...),
+	},
+}
+
 func TestSlicePrepend(t *testing.T) {
 	t.Parallel()
 
-	tests := []struct {
-		name     string
-		elem     int
-		slices   [][]int
-		expected []int
-	}{
-		{
-			name:     "no_slices",
-			elem:     1,
-			slices:   nil,
-			expected: []int{1},
-		},
-		{
-			name:     "empty_slices",
-			elem:     1,
-			slices:   [][]int{},
-			expected: []int{1},
-		},
-		{
-			name:     "single_empty_slice",
-			elem:     1,
-			slices:   [][]int{{}},
-			expected: []int{1},
-		},
-		{
-			name:     "single_nil_slice",
-			elem:     1,
-			slices:   [][]int{nil},
-			expected: []int{1},
-		},
-		{
-			name:     "single_slice",
-			elem:     0,
-			slices:   [][]int{{1, 2, 3}},
-			expected: []int{0, 1, 2, 3},
-		},
-		{
-			name:     "multiple_slices",
-			elem:     0,
-			slices:   [][]int{{1, 2}, {3, 4}, {5}},
-			expected: []int{0, 1, 2, 3, 4, 5},
-		},
-		{
-			name:     "multiple_slices_with_empty",
-			elem:     99,
-			slices:   [][]int{{1}, {}, {2, 3}},
-			expected: []int{99, 1, 2, 3},
-		},
-		{
-			name:     "mixed_nil_and_non_nil",
-			elem:     42,
-			slices:   [][]int{nil, {1, 2}, nil, {3}},
-			expected: []int{42, 1, 2, 3},
-		},
-		{
-			name:     "prepend_to_large_slice",
-			elem:     -1,
-			slices:   [][]int{sliceLargeInput},
-			expected: append([]int{-1}, sliceLargeInput...),
-		},
-	}
-
-	for i, tt := range tests {
+	for i, tt := range slicePrependTestCases {
 		t.Run(strconv.Itoa(i)+"-"+tt.name, func(t *testing.T) {
 			result := SlicePrepend(tt.elem, tt.slices...)
 			assert.Equal(t, tt.expected, result)
@@ -3670,5 +3670,50 @@ func TestSlicePrepend(t *testing.T) {
 		result := SlicePrepend(p1, []person{p2}, []person{p3})
 		expected := []person{p1, p2, p3}
 		assert.Equal(t, expected, result)
+	})
+}
+
+func TestSlicePrependInPlace(t *testing.T) {
+	t.Parallel()
+
+	for i, tt := range slicePrependTestCases {
+		if len(tt.slices) > 1 {
+			continue // only single-slice cases apply
+		}
+		t.Run(strconv.Itoa(i)+"-"+tt.name, func(t *testing.T) {
+			var input []int
+			if len(tt.slices) == 1 {
+				input = sliceDup(tt.slices[0])
+			}
+			result := SlicePrependInPlace(tt.elem, input)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+
+	t.Run("sufficient_capacity", func(t *testing.T) {
+		input := make([]int, 3, 8)
+		input[0], input[1], input[2] = 1, 2, 3
+		result := SlicePrependInPlace(0, input)
+		assert.Equal(t, []int{0, 1, 2, 3}, result)
+		assert.Same(t, &input[:1][0], &result[0])
+	})
+
+	t.Run("insufficient_capacity", func(t *testing.T) {
+		input := []int{1, 2, 3}
+		result := SlicePrependInPlace(0, input)
+		assert.Equal(t, []int{0, 1, 2, 3}, result)
+		assert.Equal(t, 1, input[0])
+	})
+
+	t.Run("empty_with_cap", func(t *testing.T) {
+		input := make([]int, 0, 4)
+		result := SlicePrependInPlace(9, input)
+		assert.Equal(t, []int{9}, result)
+		assert.Same(t, &input[:1][0], &result[0])
+	})
+
+	t.Run("nil_input", func(t *testing.T) {
+		result := SlicePrependInPlace(7, nil)
+		assert.Equal(t, []int{7}, result)
 	})
 }
