@@ -2,6 +2,8 @@ package bulk
 
 // SliceFilter returns elements that pass the predicate function.
 // May return the original slice if all elements pass (no allocation).
+// Results may be input views: capacity is clipped so appends can't modify trailing input elements,
+// but setting values on the result may still alter the input slice.
 func SliceFilter[T any](predicate func(val T) bool, slices ...[]T) []T {
 	switch len(slices) {
 	case 0:
@@ -57,7 +59,7 @@ func singleSliceFilter[T any](predicate func(val T) bool, slice []T) ([]T, bool)
 				}
 			}
 			if firstTrueIdx == -1 {
-				return slice[:0], true // No true elements found
+				return slice[:0:0], true // No true elements found, clip cap to protect input
 			}
 
 			// Check if all remaining elements are consecutive and true
@@ -89,8 +91,8 @@ func singleSliceFilter[T any](predicate func(val T) bool, slice []T) ([]T, bool)
 					return SliceFilterInto(result, predicate, slice[j+1:]), false
 				}
 			}
-			// No more true elements found, return consecutive view
-			return slice[firstTrueIdx : consecutiveEnd+1], true
+			// No more true elements found, return consecutive view (cap clipped to protect input)
+			return slice[firstTrueIdx : consecutiveEnd+1 : consecutiveEnd+1], true
 		} else { // Started true, now first false found
 			// Find first true element after falseIdx
 			secondTrueIdx := -1
@@ -101,7 +103,8 @@ func singleSliceFilter[T any](predicate func(val T) bool, slice []T) ([]T, bool)
 				}
 			}
 			if secondTrueIdx < 0 {
-				return slice[:falseIdx], true // No true elements in suffix, return prefix only
+				// No true elements in suffix, return prefix only (cap clipped to protect input)
+				return slice[:falseIdx:falseIdx], true
 			}
 
 			// true+ -> false+ -> true - We must allocate at this point
@@ -374,6 +377,7 @@ func singleSliceFilterInPlace[T any](predicate func(v T) bool, slice []T) []T {
 }
 
 // SliceSplit partitions elements based on the predicate function.
+// If all elements match a single condition, that result may be the original slice.
 // Returns (trueElements, falseElements).
 func SliceSplit[T any](predicate func(val T) bool, slices ...[]T) ([]T, []T) {
 	switch len(slices) {

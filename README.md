@@ -23,7 +23,7 @@
 - `InPlace` variants provide zero-allocation guarantees for performance-critical code
 
 ### Important: Memory Safety
-**Default functions may return views** - appending to results may affect the original slice:
+**Default functions may return views** - results can share memory with the input slice:
 ```go
 data := []int{1, 2, 4, 5, 10, 15, 20}
 lowVals := bulk.SliceFilter(func(n int) bool { return n <= 4 }, data)
@@ -32,12 +32,17 @@ lowVals := bulk.SliceFilter(func(n int) bool { return n <= 4 }, data)
 // Safe: read-only usage
 fmt.Println(lowVals)
 
-// Unsafe: modifying the result
-evens = append(lowVals, 99) // ⚠️ May corrupt original data slice
+// Safe: appending, view capacity is clipped so the append copies rather than modifying data
+lowVals = append(lowVals, 99)
+
+// Unsafe: setting values on the result may alter the original data slice
+lowVals[0] = 99 // ⚠️ May modify original data slice
 ```
 
+Views which extend to the end of the input retain the input's spare capacity, so appends there reuse pre-allocated space just like appending to the input directly (never overwriting input elements).
+
 **When to use each variant:**
-- **Default functions**: When you won't modify the result (read-only usage)
+- **Default functions**: When you won't set values on the result (read-only or append-only usage)
 - **`InPlace` variants**: When input slice can be discarded after operation
 - **Copy-safe alternatives**: Consider [lo](https://github.com/samber/lo), [Pie](https://github.com/elliotchance/pie), or a manual copy on result from `bulk`
 
