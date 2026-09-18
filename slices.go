@@ -161,8 +161,7 @@ func SliceFilterInto[T any](dest []T, predicate func(T) bool, inputs ...[]T) []T
 	return dest
 }
 
-// SliceFilterTransform returns transformed elements that pass the predicate function.
-// Combines filtering and transformation in a single efficient pass.
+// Deprecated: SliceFilterTransform is deprecated, the Transform ergonomics will be removed unless you open a GitHub issue requesting it to be retained.
 func SliceFilterTransform[I any, R any](predicate func(I) bool, transform func(I) R, inputs ...[]I) []R {
 	errTransform := func(i I) (R, error) {
 		return transform(i), nil
@@ -172,9 +171,7 @@ func SliceFilterTransform[I any, R any](predicate func(I) bool, transform func(I
 	return result
 }
 
-// SliceFilterTransformErr returns transformed elements that pass the predicate function.
-// Combines filtering and transformation in a single efficient pass.
-// If the conversion function returns an error, appending will stop with the partial result returned and the original error.
+// Deprecated: SliceFilterTransformErr is deprecated, the Transform ergonomics will be removed unless you open a GitHub issue requesting it to be retained.
 func SliceFilterTransformErr[I any, R any](predicate func(I) bool, transform func(I) (R, error), inputs ...[]I) ([]R, error) {
 	switch len(inputs) {
 	case 0:
@@ -300,15 +297,14 @@ func singleSliceFilterTransform[I any, R any](predicate func(I) bool, transform 
 	return SliceTransformErr(transform, slice)
 }
 
-// SliceFilterTransformInto appends transformed elements that pass the predicate function from the input slices into dest.
+// Deprecated: SliceFilterTransformInto is deprecated, the Transform ergonomics will be removed unless you open a GitHub issue requesting it to be retained.
 func SliceFilterTransformInto[I any, R any](dest []R, predicate func(I) bool, transform func(I) R, inputs ...[]I) []R {
 	errTransform := func(i I) (R, error) { return transform(i), nil }
 	result, _ := SliceFilterTransformErrInto(dest, predicate, errTransform, inputs...)
 	return result
 }
 
-// SliceFilterTransformErrInto appends transformed elements that pass the predicate function from the input slices into dest.
-// If the conversion function returns an error, operation stops and returns the partial result with the original error.
+// Deprecated: SliceFilterTransformErrInto is deprecated, the Transform ergonomics will be removed unless you open a GitHub issue requesting it to be retained.
 func SliceFilterTransformErrInto[I any, R any](dest []R, predicate func(I) bool, transform func(I) (R, error), inputs ...[]I) ([]R, error) {
 	for _, input := range inputs {
 		for _, val := range input {
@@ -534,16 +530,15 @@ func SliceSplitInPlaceUnstable[T any](predicate func(val T) bool, slice []T) ([]
 	}
 }
 
-// SliceTransform converts each element using the conversion function.
+// Deprecated: SliceTransform is deprecated, the Transform ergonomics will be removed unless you open a GitHub issue requesting it to be retained.
 func SliceTransform[I any, R any](conversion func(I) R, inputs ...[]I) []R {
-	result := make([]R, 0, sliceCapGuess(sliceTotalSize(inputs)))
+	result := make([]R, 0, sliceTotalSize(inputs))
 	return SliceFilterTransformInto(result, func(_ I) bool { return true }, conversion, inputs...)
 }
 
-// SliceTransformErr converts each element using the conversion function.
-// If the conversion function returns an error, operation stops and returns the partial result with the original error.
+// Deprecated: SliceTransformErr is deprecated, the Transform ergonomics will be removed unless you open a GitHub issue requesting it to be retained.
 func SliceTransformErr[I any, R any](conversion func(I) (R, error), inputs ...[]I) ([]R, error) {
-	result := make([]R, 0, sliceCapGuess(sliceTotalSize(inputs)))
+	result := make([]R, 0, sliceTotalSize(inputs))
 	return SliceFilterTransformErrInto(result, func(_ I) bool { return true }, conversion, inputs...)
 }
 

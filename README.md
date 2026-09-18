@@ -86,18 +86,6 @@ evens := bulk.SliceFilterInPlace(func(n int) bool { return n%2 == 0 }, numbers)
 // Warning: numbers slice is now corrupted and must be discarded
 ```
 
-**`SliceFilterTransform[I, R any](predicate func(I) bool, transform func(I) R, inputs ...[]I) []R`**  
-Filter and convert in one pass - the most efficient pattern for common data processing.
-
-```go
-numbers := []int{1, 2, 3, 4, 5, 6}
-evenStrings := bulk.SliceFilterTransform(
-    func(n int) bool { return n%2 == 0 },     // filter: keep evens
-    func(n int) string { return fmt.Sprintf("num_%d", n) }, // transform: to strings
-    numbers)
-// Result: ["num_2", "num_4", "num_6"]
-```
-
 ### Partitioning
 
 **`SliceSplit[T any](predicate func(v T) bool, slices ...[]T) ([]T, []T)`**  
@@ -203,11 +191,6 @@ groups := bulk.SliceToGroupsBy(func(p Person) string { return p.Dept }, people)
 - **`InPlace`**: Zero-allocation, modifies input (e.g., `SliceFilterInPlace`)
 - **`Into`**: Append to existing collection (e.g., `SliceFilterInto`, `SliceIntoSet`)
 - **`By`**: Use custom key function (e.g., `SliceToSetBy`, `SliceToGroupsBy`)
-
-### Error Handling
-- **`Err`**: Functions that can return errors (e.g., `SliceFilterTransformErr`)
-
-Many operations offer multiple variants - check function signatures for the complete API.
 
 ---
 
