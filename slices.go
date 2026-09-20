@@ -162,6 +162,7 @@ func SliceFilterInto[T any](dest []T, predicate func(T) bool, inputs ...[]T) []T
 }
 
 // Deprecated: SliceFilterTransform is deprecated, the Transform ergonomics will be removed unless you open a GitHub issue requesting it to be retained.
+// As an alternative use SliceFilter and then convert types with a for loop.
 func SliceFilterTransform[I any, R any](predicate func(I) bool, transform func(I) R, inputs ...[]I) []R {
 	errTransform := func(i I) (R, error) {
 		return transform(i), nil
@@ -172,6 +173,7 @@ func SliceFilterTransform[I any, R any](predicate func(I) bool, transform func(I
 }
 
 // Deprecated: SliceFilterTransformErr is deprecated, the Transform ergonomics will be removed unless you open a GitHub issue requesting it to be retained.
+// As an alternative use SliceFilter and then convert types with a for loop.
 func SliceFilterTransformErr[I any, R any](predicate func(I) bool, transform func(I) (R, error), inputs ...[]I) ([]R, error) {
 	switch len(inputs) {
 	case 0:
@@ -298,6 +300,7 @@ func singleSliceFilterTransform[I any, R any](predicate func(I) bool, transform 
 }
 
 // Deprecated: SliceFilterTransformInto is deprecated, the Transform ergonomics will be removed unless you open a GitHub issue requesting it to be retained.
+// As an alternative use SliceFilterInto and then convert types with a for loop.
 func SliceFilterTransformInto[I any, R any](dest []R, predicate func(I) bool, transform func(I) R, inputs ...[]I) []R {
 	errTransform := func(i I) (R, error) { return transform(i), nil }
 	result, _ := SliceFilterTransformErrInto(dest, predicate, errTransform, inputs...)
@@ -305,6 +308,7 @@ func SliceFilterTransformInto[I any, R any](dest []R, predicate func(I) bool, tr
 }
 
 // Deprecated: SliceFilterTransformErrInto is deprecated, the Transform ergonomics will be removed unless you open a GitHub issue requesting it to be retained.
+// As an alternative use SliceFilterInto and then convert types with a for loop.
 func SliceFilterTransformErrInto[I any, R any](dest []R, predicate func(I) bool, transform func(I) (R, error), inputs ...[]I) ([]R, error) {
 	for _, input := range inputs {
 		for _, val := range input {
@@ -531,12 +535,14 @@ func SliceSplitInPlaceUnstable[T any](predicate func(val T) bool, slice []T) ([]
 }
 
 // Deprecated: SliceTransform is deprecated, the Transform ergonomics will be removed unless you open a GitHub issue requesting it to be retained.
+// As an alternative use a for loop to convert types.
 func SliceTransform[I any, R any](conversion func(I) R, inputs ...[]I) []R {
 	result := make([]R, 0, sliceTotalSize(inputs))
 	return SliceFilterTransformInto(result, func(_ I) bool { return true }, conversion, inputs...)
 }
 
 // Deprecated: SliceTransformErr is deprecated, the Transform ergonomics will be removed unless you open a GitHub issue requesting it to be retained.
+// As an alternative use a for loop to convert types.
 func SliceTransformErr[I any, R any](conversion func(I) (R, error), inputs ...[]I) ([]R, error) {
 	result := make([]R, 0, sliceTotalSize(inputs))
 	return SliceFilterTransformErrInto(result, func(_ I) bool { return true }, conversion, inputs...)
