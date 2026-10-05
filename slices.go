@@ -666,20 +666,16 @@ func SliceIntersect[T comparable](a, b []T) []T {
 	// Collect intersection, preserving order from slice a
 	bLookup := SliceToSet(b)
 	var result []T
-	var seen map[T]struct{}
 	for aIdx, val := range a {
 		if _, exists := bLookup[val]; exists {
-			if _, duplicate := seen[val]; !duplicate {
-				if result == nil { // allocate based on potential remaining
-					if aMax := len(a) - aIdx; aMax < maxCount {
-						maxCount = aMax // conditional because b may still have been the min
-					}
-					seen = make(map[T]struct{}, maxCount)
-					result = make([]T, 0, sliceCapGuess(maxCount))
+			if result == nil { // allocate based on potential remaining
+				if aMax := len(a) - aIdx; aMax < maxCount {
+					maxCount = aMax // conditional because b may still have been the min
 				}
-				seen[val] = struct{}{}
-				result = append(result, val)
+				result = make([]T, 0, sliceCapGuess(maxCount))
 			}
+			delete(bLookup, val) // consume to skip duplicates without a second set
+			result = append(result, val)
 		}
 	}
 	return result
@@ -694,17 +690,13 @@ func SliceDifference[T comparable](a, b []T) []T {
 	// Collect elements from a that are not in b, with deduplication
 	exclude := SliceToSet(b)
 	var result []T
-	var seen map[T]struct{}
 	for aIdx, val := range a {
 		if _, exists := exclude[val]; !exists {
-			if _, duplicate := seen[val]; !duplicate {
-				if result == nil { // allocate based on potential remaining
-					seen = make(map[T]struct{}, len(a)-aIdx)
-					result = make([]T, 0, sliceCapGuess(len(a)-aIdx))
-				}
-				seen[val] = struct{}{}
-				result = append(result, val)
+			if result == nil { // allocate based on potential remaining
+				result = make([]T, 0, sliceCapGuess(len(a)-aIdx))
 			}
+			exclude[val] = struct{}{} // consume to skip duplicates without a second set
+			result = append(result, val)
 		}
 	}
 	return result
